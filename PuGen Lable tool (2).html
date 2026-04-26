@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>名牌製作系統 - 中台禪寺風格</title>
+	<style type="text/css">/* 中台禪寺風格配色：大地色、古銅金、米白 */
+        :root {
+            --zen-brown: #5d4037;
+            --zen-gold: #a68b5b;
+            --zen-gray: #f5f5f2;
+            --zen-text: #2c3e50;
+            --zen-border: #d7ccc8;
+        }
+
+        body { 
+            font-family: "Noto Serif TC", "Microsoft JhengHei", serif; 
+            background: var(--zen-gray); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--zen-text);
+        }
+
+        /* 控制區域佈局 */
+        .no-print { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 2px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            max-width: 700px; 
+            margin: 0 auto 40px; 
+            border-top: 5px solid var(--zen-gold);
+        }
+
+        .zen-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .zen-header h2 {
+            letter-spacing: 4px;
+            color: var(--zen-brown);
+            margin-bottom: 5px;
+        }
+
+        .zen-header p {
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .control-group { margin-bottom: 25px; }
+        
+        label { 
+            font-weight: bold; 
+            display: block; 
+            margin-bottom: 10px; 
+            color: var(--zen-brown);
+            font-size: 18px;
+        }
+
+        select, input { 
+            width: 100%; 
+            padding: 12px; 
+            font-size: 18px; 
+            border: 1px solid var(--zen-border); 
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        /* 長輩友善的大按鈕 */
+        .print-btn { 
+            background: var(--zen-gold); 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            font-size: 20px; 
+            font-weight: bold;
+            border-radius: 4px; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .print-btn:hover { background: var(--zen-brown); }
+        .print-btn:disabled { background: #d0d0d0; cursor: not-allowed; }
+
+        /* A4 標籤排版 */
+        #preview { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: flex-start; 
+            width: 210mm; /* A4 寬度 */
+            margin: 0 auto;
+            background: white;
+        }
+
+        /* 標籤精確尺寸：4cm x 2cm */
+        .label-box {
+            width: 40mm;
+            height: 20mm;
+            border: 0.1mm solid #eee; /* 螢幕顯示極細邊框 */
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 12mm auto; /* 左側分類佔1.2cm，右側姓名佔2.8cm */
+            grid-template-rows: 10mm 10mm;
+            page-break-inside: avoid;
+        }
+
+        .cell {
+            border: 0.3mm solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* 左上：類別 (特供) */
+        .cell-cat { 
+            grid-row: 1; grid-column: 1; 
+            font-size: 10pt; 
+            background: #fdfaf5; 
+        }
+        /* 左下：事件 (彩排) */
+        .cell-event { 
+            grid-row: 2; grid-column: 1; 
+            font-size: 10pt; 
+            background: #fdfaf5; 
+        }
+        /* 右上：姓名 */
+        .cell-name { 
+            grid-row: 1; grid-column: 2; 
+            font-size: 16pt; 
+            font-weight: bold; 
+            letter-spacing: 2px;
+        }
+        /* 右下：編號 (7-11) */
+        .cell-id { 
+            grid-row: 2; grid-column: 2; 
+            font-size: 11pt; 
+        }
+
+        /* 列印模式修正 */
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .no-print { display: none; }
+            #preview { border: none; padding: 0; width: 100%; }
+            .label-box { border: 0.1mm solid #ddd; } /* 印出來有助於裁切的淺色線 */
+        }
+	</style>
+</head>
+<body data-gr-ext-installed="" data-new-gr-c-s-check-loaded="14.1286.0" data-new-gr-c-s-loaded="14.1286.0">
+<div class="no-print">
+<div class="zen-header">
+<h2>普耕精舍標籤製作系統</h2>
+
+<p>「對上以敬、對下以慈、對人以和、對事以真」</p>
+</div>
+
+<div class="control-group"><label>1. 匯入名單資料庫 (CSV)</label> <input accept=".csv" id="csvFile" type="file" /></div>
+
+<div class="control-group"><label>2. 選擇分類 (如：特供、一般)</label> <select disabled="disabled" id="categorySelect"><option>-- 請先完成第一步 --</option> </select></div>
+
+<div class="control-group"><label>3. 選擇活動 (如：彩排、典禮)</label> <select disabled="disabled" id="eventSelect"><option>-- 請先選擇分類 --</option> </select></div>
+<button class="print-btn" disabled="disabled" id="printBtn" onclick="window.print()">確定無誤，預覽列印</button>
+
+<p style="text-align:center; color:#999; font-size: 14px; margin-top:15px;">阿彌陀佛，請確認印表機已放入 A4 紙張</p>
+</div>
+
+<div id="preview">&nbsp;</div>
+<script>
+    let rawData = [];
+
+    // 檔案讀取功能
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const text = event.target.result;
+            processData(text);
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+
+    function processData(csvText) {
+        const lines = csvText.split(/\r?\n/);
+        rawData = [];
+        // 從第二列開始讀取 (跳過標題)
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',');
+            if (cols.length >= 4) {
+                rawData.push({
+                    category: cols[0].trim(),
+                    name: cols[1].trim(),
+                    event: cols[2].trim(),
+                    id: cols[3].trim()
+                });
+            }
+        }
+
+        const categories = [...new Set(rawData.map(item => item.category))];
+        const catSelect = document.getElementById('categorySelect');
+        catSelect.innerHTML = '<option value="">-- 請選擇分類 --</option>';
+        categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            catSelect.appendChild(opt);
+        });
+        catSelect.disabled = false;
+    }
+
+    // 類別連動事件
+    document.getElementById('categorySelect').addEventListener('change', function() {
+        const selectedCat = this.value;
+        const events = [...new Set(rawData.filter(d => d.category === selectedCat).map(d => d.event))];
+        const eventSelect = document.getElementById('eventSelect');
+        
+        eventSelect.innerHTML = '<option value="">-- 請選擇活動 --</option>';
+        events.forEach(ev => {
+            const opt = document.createElement('option');
+            opt.value = ev;
+            opt.textContent = ev;
+            eventSelect.appendChild(opt);
+        });
+        eventSelect.disabled = false;
+        renderLabels();
+    });
+
+    document.getElementById('eventSelect').addEventListener('change', renderLabels);
+
+    // 產生標籤畫面
+    function renderLabels() {
+        const cat = document.getElementById('categorySelect').value;
+        const ev = document.getElementById('eventSelect').value;
+        const preview = document.getElementById('preview');
+        const printBtn = document.getElementById('printBtn');
+        
+        preview.innerHTML = '';
+        
+        if (!cat || !ev) {
+            printBtn.disabled = true;
+            return;
+        }
+
+        const filtered = rawData.filter(d => d.category === cat && d.event === ev);
+        
+        // 依照順序編號排序 (例如 7-01, 7-02...)
+        filtered.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+
+        filtered.forEach(item => {
+            const label = document.createElement('div');
+            label.className = 'label-box';
+            label.innerHTML = `
+                <div class="cell cell-cat">${item.category}</div>
+                <div class="cell cell-name">${item.name}</div>
+                <div class="cell cell-event">${item.event}</div>
+                <div class="cell cell-id">${item.id}</div>
+            `;
+            preview.appendChild(label);
+        });
+
+        printBtn.disabled = filtered.length === 0;
+    }
+</script><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></body>
+</html>
